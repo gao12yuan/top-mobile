@@ -1,14 +1,10 @@
 <template>
-  <div>
-    <p>App</p>
-    <router-view></router-view>
-  </div>
+  <div>login components</div>
 </template>
 <script>
 export default {
-  name: 'App'
+  name: 'Login'
 }
 </script>
 <style lang="less" scoped>
-
 </style>
