@@ -35,7 +35,8 @@ export default {
   methods: {
     async handelLogin () {
       const res = await login(this.user)
-
+      // 保存token
+      this.$store.commit('setUser', res)
       console.log(res)
     }
   }
