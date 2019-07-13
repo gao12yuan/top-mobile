@@ -5,10 +5,26 @@ import store from './store'
 import Vant from 'vant'
 import 'vant/lib/index.css'
 import 'amfe-flexible'
+// 语言包
+import zhCN from 'vee-validate/dist/locale/zh_CN'
+import VeeValidate, {
+  Validator
+} from 'vee-validate'
 
+Vue.use(VeeValidate, {
+  events: 'change'
+})
+Validator.localize('zh_CN', zhCN)
 Vue.use(Vant)
 
 Vue.config.productionTip = false
+Vue.prototype.$sleep = (time) => {
+  return new Promise((resolve, reject) => {
+    window.setTimeout(() => {
+      resolve()
+    }, time)
+  })
+}
 
 new Vue({
   router,
