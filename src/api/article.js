@@ -17,3 +17,29 @@ export const getArticles = ({
     }
   })
 }
+// 对文章不喜欢
+export const acitveDislike = targetId => {
+  return request({
+    method: 'POST',
+    url: '/app/v1_0/article/dislikes',
+    data: {
+      target: targetId
+    }
+  })
+}
+// 举报文章
+export const artcileReport = ({
+  targetId,
+  type,
+  remark
+}) => {
+  return request({
+    method: 'POST',
+    url: '/app/v1_0/article/reports',
+    data: {
+      target: targetId,
+      type,
+      remark
+    }
+  })
+}

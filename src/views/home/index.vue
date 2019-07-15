@@ -22,7 +22,7 @@
                  :title="item.name">
 
           <van-pull-refresh v-model="activeChannel.pullLoading"
-                            :success-text="activeChannel.upLoadingTxet"
+                            :success-text="successText"
                             @refresh="onRefresh">
 
             <van-list v-model="activeChannel.upLoading"
@@ -30,37 +30,74 @@
                       finished-text="没有更多了"
                       @load="onLoad">
               <van-cell v-for="item in activeChannel.articles"
-                        :key="item.art_id"
-                        :title="item.title" />
+                        :key="item.art_id.toString()"
+                        :title="item.title">
+                <div slot="label">
+                  <template v-if="item.cover.type >0">
+                    <van-grid :border="false"
+                              :column-num="3">
+                      <van-grid-item v-for="( item, index ) in item.cover.images"
+                                     :key="index">
+                        <van-image :src="item"
+                                   lazy-load />
+                      </van-grid-item>
+                    </van-grid>
+                  </template>
+                  <p>
+                    <span>{{item.aut_name}}</span>&nbsp;
+                    <span>{{item.comm_count}}</span>&nbsp;
+                    <span>{{item.pubdate}}</span>
+                    <van-icon class="icon"
+                              name="close"
+                              @click="handelShow(item)" />
+                  </p>
+                </div>
+              </van-cell>
             </van-list>
           </van-pull-refresh>
         </van-tab>
       </van-tabs>
     </div>
-    <!-- 频道管理组件 -->
+    <!-- 频道管理组件
+    :active-index="channels"
+     @updata:active-index="channelIndex = $event"
+     以上两句可以简写成
+     :active-index.sync="channelIndex"
+     -->
     <tabChannel v-model="ChannelShow"
                 :userChannels="channels"
-                :active-index="channelIndex"></tabChannel>
+                :active-index.sync="channelIndex"></tabChannel>
+    <!-- 更多操作 -->
+    <more-active v-model="activelShow"
+                 :current-article="currentArticle"
+                 @dislike-success="handelDialike"
+                 @black-success="handelDialike"></more-active>
   </div>
 </template>
 <script>
+
 // 用户频道
 import { userChannel } from '@/api/channel'
 // 热点新闻推荐
 import { getArticles } from '@/api/article'
 // 引入则罩层
 import tabChannel from './components/tabChannel'
+import moreActive from './components/active'
 export default {
   name: 'Home',
   components: {
-    tabChannel
+    tabChannel,
+    moreActive
   },
   data () {
     return {
       // 储存频道列表
       channels: [],
       channelIndex: 0,
-      ChannelShow: false
+      ChannelShow: false,
+      successText: '',
+      activelShow: false,
+      currentArticle: null
     }
   },
   created () {
@@ -105,7 +142,7 @@ export default {
         // console.log(data)
       } else {
         //  // 没有登录 如果有本地储存数据则用本地储存的
-        const loadChannels = window.localStorage.getItem('channels')
+        const loadChannels = JSON.parse(window.localStorage.getItem('channels'))
         if (loadChannels) {
           channels = loadChannels
         } else {
@@ -115,6 +152,7 @@ export default {
           // console.log(data)
         }
       }
+      // console.dir(channels)
       // 修改 channels，将这个数据结构修改为满足我们使用的需求
       channels.forEach(item => {
         // 储存当前文章列表
@@ -130,7 +168,7 @@ export default {
       })
 
       this.channels = channels
-      console.log(this.channels)
+      // console.log(this.channels)
     },
     // 上拉
     async onLoad () {
@@ -172,9 +210,9 @@ export default {
         this.activeChannel.articles = data.results
         // 更新新的时间戳
         this.activeChannel.timestamp = data.pre_timestamp
-        this.activeChannel.upLoadingTxet = '更新成功'
+        this.successText = '更新成功'
       } else {
-        this.activeChannel.upLoadingTxet = '已是最新数据'
+        this.successText = '已是最新数据'
       }
       // 下拉刷新取消
       this.activeChannel.pullLoading = false
@@ -189,8 +227,18 @@ export default {
         withTop: 1
       })
       return data
+    },
+    handelShow (article) {
+      // console.log(article)
+      this.currentArticle = article
+      this.activelShow = true
+    },
+    handelDialike () {
+      const articles = this.activeChannel.articles
+      const delIndex = articles.findIndex(item => item === this.currentArticle)
+      console.log(delIndex)
+      articles.splice(delIndex, 1)
     }
-
   }
 
 }
@@ -204,7 +252,9 @@ export default {
   // margin-bottom: 70px;
   // color: #fff;
 }
-
+.icon {
+  float: right;
+}
 .search {
   background-color: #3296fa;
   .van-search__content {
